@@ -14,11 +14,107 @@ function copyToClipboard(text, label) {
 }
 
 function toggleWalletModal() {
-    const modal = document.getElementById('wallet-modal');
+    toggleModal('wallet-modal');
+}
+
+function toggleInfoModal() {
+    loadVisitorInfo();
+    toggleModal('info-modal');
+}
+
+let visitorInfoLoaded = false;
+let initialLoadTime = "-";
+
+async function loadVisitorInfo() {
+    // Daten nur einmal laden
+    if (!visitorInfoLoaded) {
+        // ... (fetches)
+        fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('visitor-ip').innerText = "IP: " + data.ip + " (" + (data.city || "Unbekannt") + ", " + (data.country_name || "??") + ")";
+                document.getElementById('visitor-isp').innerText = "Provider: " + (data.org || "-");
+            })
+            .catch(() => {
+                document.getElementById('visitor-isp').innerText = "Provider: Nicht verfügbar";
+                // Fallback zu ipify falls ipapi fehlschlägt
+                fetch('https://api.ipify.org?format=json')
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('visitor-ip').innerText = "IP: " + data.ip;
+                    })
+                    .catch(() => {
+                        document.getElementById('visitor-ip').innerText = "IP: Nicht verfügbar";
+                    });
+            });
+
+        // Screen
+        document.getElementById('visitor-screen').innerText = "Auflösung: " + window.screen.width + "x" + window.screen.height;
+
+        // Language
+        document.getElementById('visitor-lang').innerText = "Sprache: " + (navigator.language || navigator.userLanguage);
+
+        // Referrer
+        let ref = "Direkt";
+        if (document.referrer) {
+            try {
+                ref = new URL(document.referrer).hostname;
+            } catch (e) {
+                ref = "Unbekannt";
+            }
+        }
+        document.getElementById('visitor-referrer').innerText = "Herkunft: " + ref;
+
+        // Browser & OS Info
+        const ua = navigator.userAgent;
+        let b = "Unbekannt";
+        if (ua.includes("Firefox")) b = "Firefox";
+        else if (ua.includes("Chrome") && !ua.includes("Edge") && !ua.includes("OPR")) b = "Chrome";
+        else if (ua.includes("Safari") && !ua.includes("Chrome")) b = "Safari";
+        else if (ua.includes("Edge") || ua.includes("Edg")) b = "Edge";
+        else if (ua.includes("Opera") || ua.includes("OPR")) b = "Opera";
+
+        let os = "Unbekannt";
+        if (ua.includes("Windows")) os = "Windows";
+        else if (ua.includes("Mac OS")) os = "Mac OS";
+        else if (ua.includes("Linux")) os = "Linux";
+        else if (ua.includes("Android")) os = "Android";
+        else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+
+        document.getElementById('visitor-browser').innerText = "Browser: " + b + " (" + os + ")";
+        
+        // Hardware
+        const cores = navigator.hardwareConcurrency || "-";
+        const ram = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "-";
+        document.getElementById('visitor-hardware').innerText = "Hardware: " + cores + " Kerne / " + ram + " RAM";
+
+        // Timezone
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "-";
+        document.getElementById('visitor-tz').innerText = "Zeitzone: " + tz;
+
+        // Status
+        document.getElementById('visitor-status').innerText = "Status: " + (navigator.onLine ? "Online" : "Offline");
+
+        // Load Time
+        const [perf] = performance.getEntriesByType("navigation");
+        if (perf) {
+            initialLoadTime = perf.loadEventEnd > 0 ? (perf.loadEventEnd - perf.startTime).toFixed(0) : (performance.now()).toFixed(0);
+            document.getElementById('visitor-load').innerText = "Ladezeit: " + initialLoadTime + "ms";
+        }
+        
+        visitorInfoLoaded = true;
+    }
+
+    // Cookies jedes Mal aktualisieren
+    const cookies = document.cookie;
+    document.getElementById('visitor-cookies').innerText = "Cookies: " + (cookies ? (cookies.length > 50 ? cookies.substring(0, 50) + "..." : cookies) : "Keine gefunden");
+}
+
+function toggleModal(id) {
+    const modal = document.getElementById(id);
     const content = modal.querySelector('.modal-content');
     modal.classList.toggle('show');
 
-    // Zurücksetzen der Position beim Öffnen
     if (modal.classList.contains('show')) {
         content.style.top = '';
         content.style.left = '';
@@ -26,69 +122,92 @@ function toggleWalletModal() {
     }
 }
 
-// Drag-Funktionalität für das Wallet-Modal
-function initDraggableModal() {
-    const modal = document.getElementById('wallet-modal');
-    const content = modal.querySelector('.modal-content');
+// Drag-Funktionalität für Modals
+function initDraggableModals() {
+    const modals = ['wallet-modal', 'info-modal'];
+    
+    modals.forEach(id => {
+        const modal = document.getElementById(id);
+        const content = modal.querySelector('.modal-content');
 
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-    // Gesamter Inhalt als Griff (Handle), außer man klickt auf Buttons/Items
-    content.onmousedown = dragMouseDown;
+        content.onmousedown = (e) => {
+            if (e.target.closest('.wallet-item, .info-item, .close-button')) {
+                return;
+            }
 
-    function dragMouseDown(e) {
-        // Ignoriere Drag, wenn auf interaktive Elemente geklickt wird
-        if (e.target.closest('.wallet-item') || e.target.closest('.close-button')) {
-            return;
-        }
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = () => {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                content.style.transition = 'transform 0.3s ease';
+            };
+            document.onmousemove = (e) => {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                content.style.top = (content.offsetTop - pos2) + "px";
+                content.style.left = (content.offsetLeft - pos1) + "px";
+            };
 
-        e.preventDefault();
-        // Aktuelle Mausposition beim Start
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-
-        // Transition entfernen, damit es beim Ziehen nicht ruckelt/verzögert
-        content.style.transition = 'none';
-
-        // Wechsel von translate(-50%, -50%) zu fixen Pixelwerten
-        const rect = content.getBoundingClientRect();
-        content.style.top = rect.top + 'px';
-        content.style.left = rect.left + 'px';
-        content.style.transform = 'scale(1)';
-        content.style.margin = '0';
-    }
-
-    function elementDrag(e) {
-        e.preventDefault();
-        // Neue Position berechnen
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // Neue Werte setzen
-        content.style.top = (content.offsetTop - pos2) + "px";
-        content.style.left = (content.offsetLeft - pos1) + "px";
-    }
-
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        // Transition für das nächste Mal (Öffnen/Schließen) wieder aktivieren
-        content.style.transition = 'transform 0.3s ease';
-    }
+            content.style.transition = 'none';
+            const rect = content.getBoundingClientRect();
+            content.style.top = rect.top + 'px';
+            content.style.left = rect.left + 'px';
+            content.style.transform = 'scale(1)';
+            content.style.margin = '0';
+        };
+    });
 }
 
 // Initialisiere die Drag-Funktion
-initDraggableModal();
+initDraggableModals();
 
-// Schließe das Modal, wenn man außerhalb klickt
-window.onclick = function(event) {
-    const modal = document.getElementById('wallet-modal');
-    if (event.target === modal) {
-        modal.classList.remove('show');
+// Live-Updates für ms-Werte, Status und Ping
+function startLiveUpdates() {
+    setInterval(() => {
+        // Status (Live)
+        const statusEl = document.getElementById('visitor-status');
+        if (statusEl) {
+            statusEl.innerText = "Status: " + (navigator.onLine ? "Online" : "Offline");
+        }
+    }, 50);
+
+    // Ping-Update alle 3 Sekunden
+    setInterval(updatePing, 3000);
+    updatePing();
+}
+
+async function updatePing() {
+    const pingEl = document.getElementById('visitor-ping');
+    if (!pingEl) return;
+    
+    const start = performance.now();
+    try {
+        // HEAD request für minimalen Traffic
+        await fetch('https://api.ipify.org?format=json', { method: 'HEAD', mode: 'no-cors', cache: 'no-cache' });
+        const end = performance.now();
+        pingEl.innerText = "Ping: " + (end - start).toFixed(0) + "ms";
+    } catch (e) {
+        pingEl.innerText = "Ping: Fehler";
     }
+}
+
+startLiveUpdates();
+
+// Schließe die Modals, wenn man außerhalb klickt
+window.onclick = function(event) {
+    const modals = [document.getElementById('wallet-modal'), document.getElementById('info-modal')];
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
 }
 
 function animateTitle(title) {
