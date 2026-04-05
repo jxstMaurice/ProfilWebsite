@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!-- FontAwesome für Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index_style.css">
+</head>
+<body>
+
+<div id="overlay" onclick="enterPortfolio()">
+    <h1>click to enter...</h1>
+</div>
+
+<div id="portfolio">
+
+    <div class="profile-container">
+        <div class="avatar">
+            <!-- Ein Platzhalter passend zum Thema -->
+            <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.tenor.com%2FJIwrwKRI9GAAAAAM%2Fpomni-pomni-tadc.gif&f=1&nofb=1&ipt=d5bb90d358cc2b71c2181749d9e781a067946f8035a3e8a6dc96ab3091be74fe"
+                 alt="Avatar" draggable="false">
+        </div>
+        <div class="username">Maurice</div>
+        <div class="tagline">Developer, Casino pro</div>
+        <div class="location">
+            <i class="fas fa-location-dot"></i> Austria
+        </div>
+
+        <div class="socials">
+            <i class="fab fa-discord" onclick="copyToClipboard('jxstmaurice', 'Discord Tag')"
+               title="Kopiere Discord Tag"></i>
+            <a href="https://github.com/jxstMaurice" target="_blank" style="color: inherit; text-decoration: none;"><i
+                    class="fab fa-github"></i></a>
+            <i class="fas fa-wallet" onclick="toggleWalletModal()"
+               title="Meine Wallets"></i>
+        </div>
+    </div>
+</div>
+
+<div id="wallet-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="toggleWalletModal()">&times;</span>
+        <h3>Meine Wallets</h3>
+        <div class="wallet-list">
+<!--            PAYPAL-->
+            <div class="wallet-item" onclick="window.open('https://www.paypal.com/paypalme/mautpf', '_blank')">
+                <i class="fab fa-paypal"></i>
+                <span>PayPal</span>
+            </div>
+<!--            BITCOIN-->
+            <div class="wallet-item" onclick="copyToClipboard('bc1qd2xzxghwqxs8hy2mjxp8qcx4tq07m2vxgfgck5', 'Bitcoin Adresse')">
+                <i class="fab fa-btc"></i>
+                <span>BTC: bc1q...fgck5</span>
+            </div>
+<!--            ETH-->
+            <div class="wallet-item" onclick="copyToClipboard('0x694b3F2288Ff957f30FB11C7BaEb093500A1Bb62', 'Ethereum Adresse')">
+                <i class="fab fa-ethereum"></i>
+                <span>ETH: 0x69...Bb62</span>
+            </div>
+<!--            DOGE-->
+            <div class="wallet-item" onclick="copyToClipboard('DHKBMp4p7vxVYn14aLLLskTGWtGzxWpjfL', 'Dogecoin Adresse')">
+                <i class="fas fa-dog"></i>
+                <span>DOGE: DHKB...pjfL</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="notification"></div>
+
+</body>
+</html>
+
+<script src="index_script.js"></script>
