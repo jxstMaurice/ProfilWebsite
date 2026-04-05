@@ -1,5 +1,6 @@
 function enterPortfolio() {
     document.body.classList.add('entered');
+    loadVisitorInfo();
 }
 
 function copyToClipboard(text, label) {
@@ -14,12 +15,20 @@ function copyToClipboard(text, label) {
 }
 
 function toggleWalletModal() {
-    toggleModal('wallet-modal');
+    const modal = document.getElementById('wallet-modal');
+    modal.classList.toggle('hidden');
+    if (!modal.classList.contains('hidden')) {
+        modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 function toggleInfoModal() {
     loadVisitorInfo();
-    toggleModal('info-modal');
+    const modal = document.getElementById('info-modal');
+    modal.classList.toggle('hidden');
+    if (!modal.classList.contains('hidden')) {
+        modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 let visitorInfoLoaded = false;
@@ -110,63 +119,50 @@ async function loadVisitorInfo() {
     document.getElementById('visitor-cookies').innerText = "Cookies: " + (cookies ? (cookies.length > 50 ? cookies.substring(0, 50) + "..." : cookies) : "Keine gefunden");
 }
 
-function toggleModal(id) {
-    const modal = document.getElementById(id);
-    const content = modal.querySelector('.modal-content');
-    modal.classList.toggle('show');
+// Drag-Funktionalität für die Modale
+function initDrag(element) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    element.onmousedown = dragMouseDown;
 
-    if (modal.classList.contains('show')) {
-        content.style.top = '';
-        content.style.left = '';
-        content.style.transform = '';
+    function dragMouseDown(e) {
+        // Ignoriere Klicks auf interaktive Elemente (Icons, Links, Wallet-Items)
+        if (e.target.closest('i, a, .wallet-item')) return;
+
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+        element.style.cursor = 'grabbing';
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+
+        let transform = element.style.transform || "translate(0px, 0px)";
+        let matches = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+        let currentX = matches ? parseFloat(matches[1]) : 0;
+        let currentY = matches ? parseFloat(matches[2]) : 0;
+
+        element.style.transform = `translate(${currentX - pos1}px, ${currentY - pos2}px)`;
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        element.style.cursor = 'grab';
     }
 }
 
-// Drag-Funktionalität für Modals
-function initDraggableModals() {
-    const modals = ['wallet-modal', 'info-modal'];
-    
-    modals.forEach(id => {
-        const modal = document.getElementById(id);
-        const content = modal.querySelector('.modal-content');
-
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-
-        content.onmousedown = (e) => {
-            if (e.target.closest('.wallet-item, .info-item, .close-button')) {
-                return;
-            }
-
-            e.preventDefault();
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            document.onmouseup = () => {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                content.style.transition = 'transform 0.3s ease';
-            };
-            document.onmousemove = (e) => {
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                content.style.top = (content.offsetTop - pos2) + "px";
-                content.style.left = (content.offsetLeft - pos1) + "px";
-            };
-
-            content.style.transition = 'none';
-            const rect = content.getBoundingClientRect();
-            content.style.top = rect.top + 'px';
-            content.style.left = rect.left + 'px';
-            content.style.transform = 'scale(1)';
-            content.style.margin = '0';
-        };
-    });
-}
-
-// Initialisiere die Drag-Funktion
-initDraggableModals();
+// Initialisiere Drag für beide Modals
+initDrag(document.getElementById('wallet-modal'));
+initDrag(document.getElementById('info-modal'));
 
 // Live-Updates für ms-Werte, Status und Ping
 function startLiveUpdates() {
@@ -200,14 +196,9 @@ async function updatePing() {
 
 startLiveUpdates();
 
-// Schließe die Modals, wenn man außerhalb klickt
+// Schließe die Modals (Deaktiviert für permanente Anzeige)
 window.onclick = function(event) {
-    const modals = [document.getElementById('wallet-modal'), document.getElementById('info-modal')];
-    modals.forEach(modal => {
-        if (event.target === modal) {
-            modal.classList.remove('show');
-        }
-    });
+    // Hier passiert nichts mehr, damit Modals offen bleiben
 }
 
 function animateTitle(title) {
@@ -227,7 +218,7 @@ function animateTitle(title) {
 
 animateTitle("Maurice's coole Website");
 
-// Verhindere Rechtsklick und Drag-and-Drop von Bildern
+// Verhindere Rechtsklick und das Ziehen von Bildern
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('dragstart', e => {
     if (e.target.tagName === 'IMG') e.preventDefault();
