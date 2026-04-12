@@ -16,32 +16,32 @@
 
 <div id="portfolio">
     <!-- Wallet Modal -->
-    <div id="wallet-modal" class="modal-inline">
+    <div id="wallet-modal" class="modal-inline hidden">
         <div class="modal-content-inline">
             <i class="fas fa-times close-modal" onclick="toggleWalletModal()"></i>
-            <h3 style="margin-top: 10px; color: rgb(150 54 255 / 0.63);">Meine Wallets</h3>
+            <h3 class="modal-title">Meine Wallets</h3>
             <div class="wallet-list">
                 <!--PAYPAL-->
                 <div class="wallet-item" onclick="window.open('https://www.paypal.com/paypalme/mautpf', '_blank')">
-                    <i class="fab fa-paypal" style="color: rgb(150 54 255 / 0.63);font-weight: bold"></i>
+                    <i class="fab fa-paypal wallet-icon"></i>
                     <span>PayPal</span>
                 </div>
                 <!--BITCOIN-->
                 <div class="wallet-item"
                      onclick="copyToClipboard('bc1qd2xzxghwqxs8hy2mjxp8qcx4tq07m2vxgfgck5', 'Bitcoin Adresse')">
-                    <i class="fab fa-btc" style="color: rgb(150 54 255 / 0.63);font-weight: bold"></i>
+                    <i class="fab fa-btc wallet-icon"></i>
                     <span>BTC: bc1q...fgck5</span>
                 </div>
                 <!--ETH-->
                 <div class="wallet-item"
                      onclick="copyToClipboard('0x694b3F2288Ff957f30FB11C7BaEb093500A1Bb62', 'Ethereum Adresse')">
-                    <i class="fab fa-ethereum" style="color: rgb(150 54 255 / 0.63);font-weight: bold"></i>
+                    <i class="fab fa-ethereum wallet-icon"></i>
                     <span>ETH: 0x69...Bb62</span>
                 </div>
                 <!--DOGE-->
                 <div class="wallet-item"
                      onclick="copyToClipboard('DHKBMp4p7vxVYn14aLLLskTGWtGzxWpjfL', 'Dogecoin Adresse')">
-                    <i class="fas fa-dog" style="color: rgb(150 54 255 / 0.63);font-weight: bold"></i>
+                    <i class="fas fa-dog wallet-icon"></i>
                     <span>DOGE: DHKB...pjfL</span>
                 </div>
             </div>
@@ -51,18 +51,20 @@
     <div class="profile-container">
         <div class="avatar">
             <!-- Ein Platzhalter passend zum Thema -->
-            <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fmedia.tenor.com%2FJIwrwKRI9GAAAAAM%2Fpomni-pomni-tadc.gif&f=1&nofb=1&ipt=d5bb90d358cc2b71c2181749d9e781a067946f8035a3e8a6dc96ab3091be74fe"
+            <img id="github-avatar"
                  alt="Avatar" draggable="false">
         </div>
         <div class="username">Maurice</div>
         <div class="tagline">Developer, Casino pro</div>
         <div class="location">
-            <i class="fas fa-location-dot"></i> Austria
+            <a href="https://de.wikipedia.org/wiki/Österreich" target="_blank" class="link-reset">
+                <i class="fas fa-location-dot"></i> Austria
+            </a>
         </div>
 
         <div class="socials">
             <i class="fab fa-discord" onclick="copyToClipboard('jxstmaurice', 'Discord Tag')"></i>
-            <a href="https://github.com/jxstMaurice" target="_blank" style="color: inherit; text-decoration: none;">
+            <a href="https://github.com/jxstMaurice" target="_blank" class="link-reset">
                 <i class="fab fa-github"></i>
             </a>
             <i class="fas fa-wallet" onclick="toggleWalletModal()"></i>
@@ -71,10 +73,10 @@
     </div>
 
     <!-- Info Modal -->
-    <div id="info-modal" class="modal-inline">
+    <div id="info-modal" class="modal-inline hidden">
         <div class="modal-content-inline">
             <i class="fas fa-times close-modal" onclick="toggleInfoModal()"></i>
-            <h4 style="margin-top: 10px; margin-bottom: 15px; font-size: 1.1rem; color: rgb(150 54 255 / 0.63);">Besucher-Daten</h4>
+            <h4 class="modal-title-small">Besucher-Daten</h4>
             <div class="info-details">
                 <div class="info-item">
                     <i class="fas fa-network-wired"></i>
@@ -90,7 +92,7 @@
                 </div>
                 <div class="info-item">
                     <i class="fas fa-cookie-bite"></i>
-                    <span id="visitor-cookies" style="word-break: break-all; font-size: 0.8rem; text-align: left;">Cookies: Keine</span>
+                    <span id="visitor-cookies" class="info-cookies">Cookies: Keine</span>
                 </div>
                 <div class="info-item">
                     <i class="fas fa-desktop"></i>
