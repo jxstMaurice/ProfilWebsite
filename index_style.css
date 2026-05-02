@@ -8,8 +8,7 @@
     --bg-black: #000;
     --bg-dark: #0a0a0a;
     --text-main: #fff;
-    --text-dim: rgba(255, 255, 255, 0.6);
-    --shadow-main: 0 0 20px rgba(110, 62, 163, 0.3);
+    --shadow-avatar: 0 0 30px rgba(150, 54, 255, 0.76);
 }
 
 body, html {
@@ -28,17 +27,14 @@ body, html {
     -webkit-user-drag: none;
 }
 
+/* === Overlay === */
 #overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background-color: var(--bg-black);
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--text-main);
     z-index: 1000;
     cursor: pointer;
     transition: opacity 1s ease-out, visibility 1s;
@@ -52,22 +48,21 @@ body, html {
 }
 
 @keyframes pulse {
-    0% { opacity: 0.4; }
+    0%, 100% { opacity: 0.4; }
     50% { opacity: 1; }
-    100% { opacity: 0.4; }
 }
 
+/* === Portfolio === */
 #portfolio {
     opacity: 0;
+    visibility: hidden;
     transition: opacity 1.5s ease-in;
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 40px;
     width: 100%;
     height: 100%;
-    visibility: hidden;
     position: relative;
     padding: 0 20px;
     box-sizing: border-box;
@@ -83,8 +78,7 @@ body.entered #overlay {
     visibility: hidden;
 }
 
-
-/* Haupt-Profilbereich */
+/* === Profile === */
 .profile-container {
     text-align: center;
     display: flex;
@@ -97,9 +91,8 @@ body.entered #overlay {
     height: 100px;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 15px;
-    box-shadow: var(--shadow-main);
+    box-shadow: var(--shadow-avatar);
 }
 
 .avatar img {
@@ -112,28 +105,6 @@ body.entered #overlay {
     font-size: 1.8rem;
     font-weight: bold;
     margin-bottom: 5px;
-}
-
-/* Benachrichtigungs-Toast */
-#notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgb(80, 40, 120);
-    color: var(--text-main);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    z-index: 4000;
-    box-shadow: 0 0 15px rgba(110, 62, 163, 0.5);
-}
-
-#notification.show {
-    opacity: 1;
-    visibility: visible;
 }
 
 .tagline {
@@ -158,7 +129,6 @@ body.entered #overlay {
     text-decoration: none;
 }
 
-/* Social-Icons */
 .socials {
     display: flex;
     gap: 20px;
@@ -172,6 +142,29 @@ body.entered #overlay {
     cursor: pointer;
 }
 
+/* === Notification === */
+#notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgb(80, 40, 120);
+    color: var(--text-main);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 4000;
+    box-shadow: 0 0 15px rgba(110, 62, 163, 0.5);
+}
+
+#notification.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* === Modals === */
 .modal-inline {
     position: absolute;
     z-index: 100;
@@ -179,15 +172,13 @@ body.entered #overlay {
     cursor: grab;
 }
 
-#wallet-modal {
-    left: 40px;
-    top: 100px;
+.modal-inline.hidden {
+    display: none;
 }
 
-#info-modal {
-    right: 40px;
-    top: 100px;
-}
+#wallet-modal    { left: 40px;  top: 100px;   }
+#info-modal      { right: 40px; top: 100px;   }
+#converter-modal { left: 40px;  bottom: 40px; }
 
 .modal-content-inline {
     background: var(--bg-dark);
@@ -202,19 +193,14 @@ body.entered #overlay {
     position: relative;
 }
 
-.modal-title {
-    margin-top: 10px;
-    margin-bottom: 25px;
-    color: var(--accent-color);
-    font-size: 1.4rem;
-}
-
+.modal-title,
 .modal-title-small {
     margin-top: 10px;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
     color: var(--accent-color);
 }
+
+.modal-title       { margin-bottom: 25px; font-size: 1.4rem; }
+.modal-title-small { margin-bottom: 15px; font-size: 1.1rem; }
 
 .close-modal {
     position: absolute;
@@ -232,11 +218,7 @@ body.entered #overlay {
     transform: scale(1.1);
 }
 
-.modal-inline.hidden {
-    display: none;
-}
-
-
+/* === Wallet Modal === */
 .wallet-list {
     display: flex;
     flex-direction: column;
@@ -251,20 +233,14 @@ body.entered #overlay {
     align-items: center;
     gap: 15px;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+    transition: background 0.3s, transform 0.2s, border-color 0.3s;
     border: 1px solid transparent;
-    user-select: none; /* Keine Markierung mehr erlaubt */
 }
 
 .wallet-item:hover {
     background: rgba(110, 62, 163, 0.2);
     transform: scale(1.02);
     border-color: var(--primary-color-alpha);
-}
-
-.wallet-icon {
-    color: var(--accent-color);
-    font-weight: bold;
 }
 
 .wallet-item i {
@@ -278,7 +254,11 @@ body.entered #overlay {
     opacity: 0.8;
 }
 
-/* Info Modal spezifisch */
+.wallet-icon {
+    color: var(--accent-color);
+}
+
+/* === Info Modal === */
 .info-details {
     display: flex;
     flex-direction: column;
@@ -304,12 +284,137 @@ body.entered #overlay {
 .info-cookies {
     word-break: break-all;
     font-size: 0.8rem;
-    text-align: left;
 }
 
-#info-modal p {
-    font-size: 0.95rem;
-    opacity: 0.8;
-    line-height: 1.6;
-    margin-bottom: 20px;
+/* === Converter Modal === */
+.converter-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.drop-zone {
+    border: 2px dashed var(--primary-color-alpha);
+    border-radius: 10px;
+    padding: 22px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s, background 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.drop-zone i {
+    font-size: 1.8rem;
+    color: var(--accent-color);
+}
+
+.drop-zone span {
+    font-size: 0.82rem;
+    opacity: 0.6;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+    border-color: var(--accent-color);
+    background: rgba(110, 62, 163, 0.08);
+}
+
+.converter-file-info {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(110, 62, 163, 0.15);
+    border-radius: 10px;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    word-break: break-all;
+}
+
+.converter-file-info i {
+    color: var(--accent-color);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.converter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.converter-options label {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    margin-bottom: -4px;
+}
+
+.converter-options select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-color-alpha);
+    border-radius: 8px;
+    color: var(--text-main);
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+.converter-options select:focus {
+    border-color: var(--accent-color);
+}
+
+.converter-options select option {
+    background: #111;
+    color: #fff;
+}
+
+.converter-options select option:checked {
+    background: var(--primary-color);
+}
+
+.converter-btn {
+    background: rgba(110, 62, 163, 0.25);
+    border: 1px solid var(--primary-color-alpha);
+    border-radius: 8px;
+    color: var(--text-main);
+    padding: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s;
+    width: 100%;
+}
+
+.converter-btn:hover:not(:disabled) {
+    background: rgba(110, 62, 163, 0.45);
+    transform: scale(1.02);
+}
+
+.converter-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.converter-download-btn {
+    background: rgba(54, 163, 100, 0.2);
+    border-color: rgba(54, 163, 100, 0.4);
+}
+
+.converter-download-btn:hover:not(:disabled) {
+    background: rgba(54, 163, 100, 0.4);
+}
+
+.converter-error {
+    font-size: 0.82rem;
+    color: #e05a5a;
+    background: rgba(224, 90, 90, 0.1);
+    border: 1px solid rgba(224, 90, 90, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
 }
