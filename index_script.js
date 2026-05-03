@@ -70,6 +70,9 @@ async function loadVisitorInfo() {
         const data = await fetch('https://ipapi.co/json/').then(r => r.json());
         setText('visitor-ip', `IP: ${data.ip} (${data.city || 'Unbekannt'}, ${data.country_name || '??'})`);
         setText('visitor-isp', `Provider: ${data.org || '-'}`);
+        if (data.latitude != null && data.longitude != null) {
+            window.setGlobeMarker?.(data.latitude, data.longitude);
+        }
     } catch {
         setText('visitor-isp', 'Provider: Nicht verfügbar');
         try {
@@ -191,6 +194,107 @@ document.addEventListener('dragstart', e => { if (e.target.tagName === 'IMG') e.
     } catch (e) {
         console.error('Avatar konnte nicht geladen werden:', e);
     }
+})();
+
+// =============================================================
+// Background Globe (Three.js wireframe + continent outlines)
+// =============================================================
+(() => {
+    if (typeof THREE === 'undefined') return;
+    const container = $('globe-bg');
+    if (!container) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    const RADIUS = 5;
+    const globe = new THREE.Group();
+    globe.rotation.z = 0.4; // earth-like tilt
+    scene.add(globe);
+
+    // Wireframe sphere (lat/lng grid)
+    globe.add(new THREE.LineSegments(
+        new THREE.WireframeGeometry(new THREE.SphereGeometry(RADIUS, 36, 18)),
+        new THREE.LineBasicMaterial({ color: 0x3a3a3a, transparent: true, opacity: 0.5 })
+    ));
+
+    // Continent outline material
+    const continentMaterial = new THREE.LineBasicMaterial({
+        color: 0x888888,
+        transparent: true,
+        opacity: 0.85,
+    });
+
+    const latLngToVec3 = (lat, lng, r) => {
+        const phi = (90 - lat) * Math.PI / 180;
+        const theta = (lng + 180) * Math.PI / 180;
+        return new THREE.Vector3(
+            -r * Math.sin(phi) * Math.cos(theta),
+            r * Math.cos(phi),
+            r * Math.sin(phi) * Math.sin(theta)
+        );
+    };
+
+    fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')
+        .then(r => r.json())
+        .then(topology => {
+            if (typeof topojson === 'undefined') return;
+            const land = topojson.feature(topology, topology.objects.land);
+            const features = land.features || [land];
+
+            const addRing = (coords) => {
+                const points = coords.map(([lng, lat]) => latLngToVec3(lat, lng, RADIUS * 1.002));
+                const geom = new THREE.BufferGeometry().setFromPoints(points);
+                globe.add(new THREE.Line(geom, continentMaterial));
+            };
+
+            for (const feature of features) {
+                const geom = feature.geometry;
+                if (!geom) continue;
+                if (geom.type === 'Polygon') geom.coordinates.forEach(addRing);
+                else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(p => p.forEach(addRing));
+            }
+        })
+        .catch(e => console.warn('Globe: continent data konnte nicht geladen werden', e));
+
+    camera.position.z = 14;
+
+    // User location marker
+    let userMarker = null;
+    window.setGlobeMarker = (lat, lng) => {
+        if (userMarker) {
+            globe.remove(userMarker);
+            userMarker.geometry.dispose();
+            userMarker.material.dispose();
+        }
+        userMarker = new THREE.Mesh(
+            new THREE.SphereGeometry(0.1, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xff4d6d })
+        );
+        userMarker.position.copy(latLngToVec3(lat, lng, RADIUS * 1.02));
+        globe.add(userMarker);
+    };
+
+    const animate = () => {
+        requestAnimationFrame(animate);
+        globe.rotation.y += 0.001;
+        if (userMarker) {
+            const s = 1 + Math.sin(performance.now() * 0.003) * 0.25;
+            userMarker.scale.set(s, s, s);
+        }
+        renderer.render(scene, camera);
+    };
+    animate();
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 })();
 
 // =============================================================
